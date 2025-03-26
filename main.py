@@ -1,4 +1,5 @@
 import random
+import math
 
 def get_random_number(num_bits):
     return random.randrange(0, 1 << num_bits) | ((1 << num_bits) | 1)
@@ -33,4 +34,26 @@ def get_prime(num_bits=256):
         if is_prime(num):
             return num
 
-print(get_prime(512))
+def gcd(a, b):
+    while b != 0:
+        t = b
+        b = a % b
+        a = t
+    return a
+
+def rsa():
+    p = get_prime(512)
+    q = get_prime(512)
+    n = p * q
+    lamb = abs((p - 1) * (q - 1)) // gcd(p - 1, q - 1)
+    e = random.randrange(1, lamb)
+    while gcd(e, lamb) != 1:
+        e = random.randrange(1, lamb)
+    d = pow(e, -1, lamb)
+
+    m = 69420
+    c = pow(m, e, n)
+    print(pow(c, d, n))
+
+
+rsa()
