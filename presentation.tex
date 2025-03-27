@@ -1,0 +1,291 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage{listings}
+\usepackage{cancel}
+\usepackage{mathtools}
+\usepackage{listings}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\usepackage{ulem}
+% Oxford Maths theming
+
+% Set author etc info
+\title[My Talk] %short version of title for slide footer
+{RSA from (almost) scratch} %full title for titlepage
+\author{Luke Pyle}
+\date[28th March 2025]  %short date for slide 
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+
+
+\begin{frame}
+    \begin{center} 
+        The intuitive idea behind RSA is very simple
+        \[e(x) = x^a \mod n\]
+        \[d(x) = x^b \mod n\]
+        \[d(e(x)) = x\]
+        \newline
+        Hence the RSA algorithm requires finding values for a, b, and n.
+        Once these values have been found, we publish the public key (a, n) and keep the secret key (b) private.
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        How do we find a, b, n such that it's infeasible to compute b given (a, n) AND $d(e(x)) = x$ holds for all values of $x$?
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Any number $p$ is relatively prime (coprime) to $r$ if 
+        \[gcd(p,r)=1\]
+        For example 11 and 14 are coprime to each other because 1 is the largest number that divides both of them.
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        How do we generate prime numbers?
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        There is no forumla for prime numbers, the best option is to just guess and check.
+
+        
+        $\bcancel{p_{n} = 1 + \sum_{i=1}^{2^n} \left \lfloor \left(\frac{n}{\sum_{j=1}^{i}\left\lfloor (cos \frac{(j -1)! + 1}{j} \pi)^{2}\right\rfloor}\right)^{\frac{1}{n}} \right \rfloor}$
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Luckily, primes are common and there are infinitly many of them. Given a positive integer, $N$, the probability of it being prime is $\frac{1}{\ln N}$
+        \newline
+        \newline
+        This means we can generate a 512 bit prime in on average 354 random guesses! 
+        \newline
+        \newline
+        Now we just need an efficient way of determine if a number is prime or not.
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        The naive approach would be to check each number $2,3,...,\sqrt{N}$ until we find one that divides N. This is stupid. It may work well for smaller values of N, but we need large primes. Instead, we will make use of the Miller–Rabin and Solovay–Strassen primality test. This algorithm states that $N$ is \textit{likely} to be a prime if:
+        \begin{align*}
+            a^{d} \equiv 1 \mod N
+        \end{align*}
+        OR
+        \begin{align*}
+            a^{2^{r}d} \equiv -1 \mod N \hspace{1mm} (r=0,1, ... , s-1)
+        \end{align*}
+        where
+        \begin{align*}
+            N - 1 = 2^{s}d \hspace{1mm}\text{and}\hspace{1mm} (d \equiv 1 \mod 2)
+        \end{align*}
+        and $a$ is a randomly chosen number between 2 and N - 1. The more times we repeat this test for different values of a, the higher the likelyhood of $N$ \textit{being} prime 
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        An understanding for why this works is left as an exercise for the listener.
+    \end{center}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{Screenshot from 2025-03-27 12-10-25.png}
+    \label{fig:enter-label}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        With that in mind, lets get back to the equations from earlier
+        \[e(x) = x^a \mod n\]
+        \[d(x) = x^b \mod n\]
+        \[d(e(x)) = x \mod n\]
+        The final equation can be rewritten as
+        \[x^{ab} \equiv x \mod n\]
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        \underline{Euler's Theorem}\\
+        \vspace{5mm}
+        If $gcd(x, n) = 1$ then $x^{\phi(n)k} \equiv 1 \mod n$\\
+        Where $\phi(n)$ is Euler's totient function
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        The idea behind Euler's totient function is simple.\\
+        $\phi(n)$ is the number of positive integers up to $n$ which are coprime to n.\\
+        \vspace{5mm}
+        For example consider $\phi(6)$\\
+        1. $gcd(1,6) = 1$ \checkmark \\
+        2. $gcd(2, 6) = 2$ \\
+        3. $gcd(3, 6) = 3$ \\
+        4. $gcd(4, 6) = 2$ \\
+        5. $gcd(5, 6) = 1$ \checkmark \\
+        6. $gcd(6, 6) = 6$ \\
+        \vspace{5mm}
+        Therefore $\phi(6) = 2$
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Euler's totient has some nice properties we will exploit later.\\
+        \vspace{5mm}
+        1) If $p$ is prime then $\phi(p) = p - 1$\\
+        2) $\phi(np) = \phi(n)\phi(p)$ 
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        \begin{gather*}
+            \text{Recall Euler's Theorem}\\
+            gcd(x, n) = 1 \implies x^{\phi(n)k} \equiv 1 \mod n\\
+            \text{Multiply both sides by x}\\
+            x^{\phi(n)k + 1} \equiv x \mod n\\
+            \text{Does this look familar?}
+        \end{gather*}
+        This allows us to deduce that $ab = \phi(n)k+1$
+    \end{center}
+\end{frame}
+
+
+\begin{frame}
+    \begin{center}
+        Lets now assume that $n = pq$ where p and q are both prime numbers, this lets us invoke the properties of the totient function from the earlier slide.
+        \vspace{5mm}
+        \[\phi(n) = \phi(pq) = \phi(p)\phi(q) = (p-1)(q-1)\]
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        We know that
+        \[ab = \phi(n)k + 1\]\\
+        therefore
+        \[ab - 1 = \phi(n)k\]\\
+        this means $ab - 1$ must be divisible by $\phi(n)$ and hence
+        \[(ab-1) \equiv 0 \mod \phi(n)\]\\
+        which can be rewritten as
+        \[ab \equiv 1 \mod \phi(n)\]\\
+        Isn't that beautiful? 
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Now, given encryption exponent a, we can derive the decryption exponent n by solving
+        \[ab \equiv 1 \mod \phi(n)\]\\
+        this can be rewritten as
+        \[b = a^{-1} \mod \phi(n)\]\\
+        Hence we are looking for the value that when multiplied by a gives 1 modular $\phi(n)$ we call this the modular inverse, and it can be found using the extended euclidean algorithm.        
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+            The standard euclidean algorithm finds $gcd(a, b)$ the extended euclidean algorithm finds $ax + by = gcd(a, b)$
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Lets understand the extended euclidean algorithm by considering a simple example, Lets say we want to find a value a such that $3a \equiv 1 \mod 11$\\
+
+        Firstly, lets use the regular euclidean algorithm to compute $gcd(3, 11)$ this is done by repeatedly taking the divisor of the previous step divided by the remainder\\
+        1) $11/3$ = 3 remainder 2 $\implies$ 11 = 3 * 3 + 2\\
+        2) $3/2$ = 1 remainder 1 $\implies$ 3 = 1 * 2 + 1\\
+        3) $2/1$ = 2 remainder 0 $\implies$ 2 = 2 * 1 + 0\\
+        The gcd we are looking for is the remainder above the first 0 remainder. Hence $gcd(3, 11) = 1$
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Lets take the core equations we found above:\\
+        1) 11 = 3 * 3 + 2\\
+        2) 3 = 1 * 2 + 1\\
+        3) 2 = 2 * 1 + 0\\
+
+        From equation 2) we can deduce that 1 = 3 - 2 * 1\\
+        From equation 1) we can deduce that 2 = 11 - 3 * 3\\
+        Combine these to produce: 1 = 3 - (11 - 3 * 3)\\
+        Simplify: 1 = 3 - 11 + 3 * 3 = 4 * 3 - 11\\
+        Hence 1 = 4 * 3 - 1 * 11\\
+        Hence 3 * 4 = 1 + 11\\
+        $\implies 3*4 - 1 \equiv 0 \mod 11$  
+        $\implies 3*4 \equiv 1 \mod 11$\\ 
+        Notice how in this example, gcd(11, 3) = 1, in order for a modular inverse to exist, this is a requirement
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Taking this idea and converting it to code, is a very annoying and boring process, my implementation is based off the pseudocode provided on wikipeida: \url{https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm}\\
+        \vspace{5mm}
+        In addition python has the ability to do all of this with the pow function.
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Therefore, we can solve our original problem of computing $b^{-1}$ under mod $\phi(n)$ we thus have found $ab = 1 \mod \phi(n)$ for any given value of a, as long as $gcd(a, \phi(n)) = 1$
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        You'd think this would be unsafe right? After all we are publishing both a and n as our public key, surely an adversary could just use that information to find our private exponent b?
+        \textbf{NO!}
+        Recall we chose n = pq where p and q are large prime numbers, finding $\phi(n)$ for large values of n using the naive checking approach is computationally infeasible, the only way it can be done is by exploiting $\phi(n) = (p-1)(q-1)$ however, this requires us to be able to prime factorize n into p and q, remember we publish n, but keep p and q private, and luckily for us, no algorithms exist for finding the the prime factorisation for large numbers.
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        With that, we have derived all the intuition to understand every step needed for RSA key generation
+        \begin{figure}
+            \centering
+            \includegraphics[width=0.7\linewidth]{image2.png}
+            \label{fig:enter-label}
+        \end{figure}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.75\linewidth]{3.png}
+        \label{fig:enter-label}
+    \end{figure}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        Thank You! (hopefully this wasn't too dull)
+        \url{https://github.com/ScriptLineStudios/rsa_impl}
+    \end{center}
+\end{frame}
+
+\end{document}

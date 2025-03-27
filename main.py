@@ -45,15 +45,14 @@ def rsa():
     p = get_prime(512)
     q = get_prime(512)
     n = p * q
-    lamb = abs((p - 1) * (q - 1)) // gcd(p - 1, q - 1)
-    e = random.randrange(1, lamb)
-    while gcd(e, lamb) != 1:
-        e = random.randrange(1, lamb)
-    d = pow(e, -1, lamb)
+    tot = (p - 1) * (q - 1)
+    e = random.randrange(1, tot)
+    while gcd(e, tot) != 1:
+        e = random.randrange(1, tot)
+    d = pow(e, -1, tot)
 
-    m = 69420
+    m = 111111
     c = pow(m, e, n)
     print(pow(c, d, n))
-
 
 rsa()
