@@ -1,6 +1,17 @@
 import random
 import math
 
+def extended_gcd(a, b):
+    if a == 0:
+        return b, 0, 1
+    else:
+        gcd, y, x = extended_gcd(b % a, a)
+        return gcd, x - (b // a) * y, y
+
+def modinv(a, m):
+    g, x, y = extended_gcd(a, m)
+    return x % m
+
 def get_random_number(num_bits):
     return random.randrange(0, 1 << num_bits) | ((1 << num_bits) | 1)
 
@@ -51,7 +62,9 @@ def rsa():
         e = random.randrange(1, tot)
     d = pow(e, -1, tot)
 
-    m = 111111
+    m = get_prime(512)
+    print(m)
+    print(gcd(m, n))
     c = pow(m, e, n)
     print(pow(c, d, n))
 
